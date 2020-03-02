@@ -155,7 +155,7 @@ def get_parser():
     parser.add_argument('-e', '--epoch', type=int, default=50, help='Number of epochs')
     parser.add_argument('-b', '--batchsize', type=int, default=4, help='Batch size')
     parser.add_argument('-t', '--trainrate', type=float, default=0.7, help='Training rate')
-    parser.add_argument('-r', '--l2reg', type=float, default=0.0001, help='L2 regularization')
+    parser.add_argument('-l', '--l2reg', type=float, default=0.0001, help='L2 regularization')
     parser.add_argument('-n', '--num', type=int, default=None, help='the number of images')
     parser.add_argument('-s', '--size', default=(128, 128), help='image size')
     parser.add_argument('-r', '--restore', default=None, help='name of the checkpoint file')
