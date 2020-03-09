@@ -25,7 +25,7 @@ def train(parser):
     #imageの枚数
     NUM = parser.num
     #画像の学習サイズ
-    size = parser.size
+    size = tuple(parser.size)
     #trainrate
     trainrate = parser.trainrate
 
@@ -157,7 +157,7 @@ def get_parser():
     parser.add_argument('-t', '--trainrate', type=float, default=0.7, help='Training rate')
     parser.add_argument('-l', '--l2reg', type=float, default=0.0001, help='L2 regularization')
     parser.add_argument('-n', '--num', type=int, default=None, help='the number of images')
-    parser.add_argument('-s', '--size', nargs=2, default=(128, 128), help='image size')
+    parser.add_argument('-s', '--size', nargs=2, type=int, default=(128, 128), help='image size')
     parser.add_argument('-r', '--restore', default=None, help='name of the checkpoint file')
     return parser
 
