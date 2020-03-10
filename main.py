@@ -75,15 +75,7 @@ def train(parser):
     epochs = parser.epoch
     batch_size = parser.batchsize
 
-
-    v_images_original = valid.images_original
     t_images_original = test.images_original
-
-    train_dict = {model_unet.inputs: v_images_original, model_unet.teacher: valid.images_segmented,
-                  model_unet.is_training: False}
-    test_dict = {model_unet.inputs: t_images_original, model_unet.teacher: test.images_segmented,
-                 model_unet.is_training: False}
-
 
     saver = tf.train.Saver(max_to_keep=100)
     if  not os.path.exists("./checkpoint"):
@@ -106,11 +98,36 @@ def train(parser):
         train_images_original = train.images_original
 
         # 評価
+        accuracy_train = 0
+        loss_train = 0
+        accuracy_test =0
+        loss_test = 0
+
         if epoch % 1 == 0:
-            loss_train = sess.run(cross_entropy, feed_dict=train_dict)
-            loss_test = sess.run(cross_entropy, feed_dict=test_dict)
-            accuracy_train = sess.run(accuracy, feed_dict=train_dict)
-            accuracy_test = sess.run(accuracy, feed_dict=test_dict)
+            num_batch = 0
+            for batchs in valid(batch_size=batch_size):
+                num_batch += 1
+                images = batchs.images_original
+                segmented = batchs.images_segmented
+                accuracy_train += sess.run(accuracy, feed_dict={model_unet.inputs: images, model_unet.teacher: segmented,
+                  model_unet.is_training: False})
+                loss_train += sess.run(cross_entropy, feed_dict={model_unet.inputs: images, model_unet.teacher: segmented,
+                  model_unet.is_training: False})
+            accuracy_train /= num_batch
+            loss_train /= num_batch
+
+            num_batch = 0
+            for batchs in test(batch_size=batch_size):
+                num_batch += 1
+                images = batchs.images_original
+                segmented = batchs.images_segmented
+                accuracy_test += sess.run(accuracy, feed_dict={model_unet.inputs: images, model_unet.teacher: segmented,
+                 model_unet.is_training: False})
+                loss_test += sess.run(cross_entropy, feed_dict={model_unet.inputs: images, model_unet.teacher: segmented,
+                 model_unet.is_training: False})
+            accuracy_test /= num_batch
+            loss_test /= num_batch
+
             print("Epoch:", epoch)
             print("[Train] Loss:", loss_train, " Accuracy:", accuracy_train)
             print("[Test]  Loss:", loss_test, "Accuracy:", accuracy_test)
@@ -135,8 +152,17 @@ def train(parser):
     save_path = saver.save(sess, "./checkpoint/save_model_done.ckpt")
 
     #modelの評価
-    loss_test = sess.run(cross_entropy, feed_dict=test_dict)
-    accuracy_test = sess.run(accuracy, feed_dict=test_dict)
+
+    for batchs in test(batch_size=batch_size):
+        images = batchs.images_original
+        segmented = batchs.image_segmented
+        accuracy_test += sess.run(accuracy, feed_dict={model_unet.inputs: images, model_unet.teacher: segmented,
+        model_unet.is_training: False})
+        loss_test += sess.run(cross_entropy, feed_dict={model_unet.inputs: images, model_unet.teacher: segmented,
+        model_unet.is_training: False})
+    accuracy_test /= num_batch
+    loss_test /= num_batch
+
     print("Result")
     print("[Test]  Loss:", loss_test, "Accuracy:", accuracy_test)
 
